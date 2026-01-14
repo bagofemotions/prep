@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+<!-- Delete Confirmation Modal -->
+<div th:fragment="deleteModal" class="modal fade" id="deleteConfirmModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" th:classappend="${hasChildren} ? 'bg-warning' : 'bg-danger text-white'">
+                <h5 class="modal-title">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    <span th:if="${!hasChildren}">Confirm Delete</span>
+                    <span th:if="${hasChildren}">Warning: Has Children</span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            
+            <div class="modal-body">
+                <!-- No Children - Simple Delete -->
+                <div th:if="${!hasChildren}">
+                    <p class="lead">
+                        Are you sure you want to delete this <strong th:text="${entityType}">entity</strong>?
+                    </p>
+                    <div class="alert alert-info mb-0">
+                        <strong>Name:</strong> <span th:text="${entityName}">Entity Name</span>
+                    </div>
+                </div>
+                
+                <!-- Has Children - Warning -->
+                <div th:if="${hasChildren}">
+                    <div class="alert alert-warning">
+                        <h6 class="alert-heading">
+                            <i class="bi bi-exclamation-triangle-fill"></i> 
+                            This <span th:text="${entityType}">entity</span> has children!
+                        </h6>
+                        <p class="mb-0">
+                            <strong th:text="${entityName}">Entity Name</strong> has 
+                            <strong th:text="${childCount}">0</strong> 
+                            <span th:text="${childType}">children</span> associated with it.
+                        </p>
+                    </div>
+                    
+                    <p><strong>You have two options:</strong></p>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card border-danger mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title text-danger">
+                                        <i class="bi bi-x-circle"></i> Simple Delete
+                                    </h6>
+                                    <p class="card-text small">
+                                        This will fail because the <span th:text="${entityType}">entity</span> 
+                                        still has <span th:text="${childType}">children</span>.
+                                    </p>
+                                    <p class="card-text small text-muted">
+                                        You must delete all <span th:text="${childType}">children</span> first.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="card border-danger mb-3">
+                                <div class="card-body">
+                                    <h6 class="card-title text-danger">
+                                        <i class="bi bi-trash-fill"></i> Cascade Delete
+                                    </h6>
+                                    <p class="card-text small">
+                                        This will delete the <span th:text="${entityType}">entity</span> 
+                                        <strong>AND ALL</strong> <span th:text="${childCount}">0</span> 
+                                        <span th:text="${childType}">children</span>.
+                                    </p>
+                                    <p class="card-text small text-danger">
+                                        <strong>⚠️ This action cannot be undone!</strong>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle"></i> Cancel
+                </button>
+                
+                <!-- Simple Delete Button -->
+                <form th:if="${!hasChildren}" 
+                      th:action="${deleteUrl}" 
+                      method="post" 
+                      style="display: inline;">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash"></i> Delete
+                    </button>
+                </form>
+                
+                <!-- Cascade Delete Button (only if has children) -->
+                <form th:if="${hasChildren}" 
+                      th:action="${cascadeDeleteUrl}" 
+                      method="post" 
+                      style="display: inline;"
+                      onsubmit="return confirm('⚠️ FINAL WARNING: This will permanently delete the ' + 
+                                               document.querySelector('[data-entity-name]').textContent + 
+                                               ' and ALL its children. This cannot be undone! Are you absolutely sure?');">
+                    <button type="submit" class="btn btn-danger">
+                        <i class="bi bi-trash-fill"></i> Cascade Delete All
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden data for JavaScript -->
+<span th:attr="data-entity-name=${entityName}" style="display: none;"></span>
+
+</body>
+</html>

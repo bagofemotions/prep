@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Floor Management - SMT Management</title>
+	<link rel="stylesheet" th:href="@{/css/global.css}">
+
+</head>
+<body>
+<div th:fragment="content">
+    
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Floor Management</h1>
+        <a sec:authorize="hasRole('ADMIN')" href="/floors/create" class="btn btn-primary">
+            <i class="bi bi-plus-circle"></i> Add Floor
+        </a>
+    </div>
+    
+    <!-- Alert Messages -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle"></i> <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    
+    <!-- Search Bar -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" action="/floors" class="row g-3">
+                <div class="col-md-10">
+                    <input type="text" name="search" class="form-control" 
+                           placeholder="Search floors by name..." 
+                           th:value="${search}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Floors Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-building"></i> Floors
+                <span class="badge bg-primary" th:text="${totalItems}">0</span>
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Floor Name</th>
+                            <th>Number of Lines</th>
+                            <th sec:authorize="hasRole('ADMIN')">Actions</th>
+                            <th sec:authorize="hasRole('OPERATOR')">View</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(floors)}">
+                            <td colspan="5" class="text-center text-muted">
+                                <i class="bi bi-inbox"></i> No floors found
+                            </td>
+                        </tr>
+                        <tr th:each="floor : ${floors}">
+                            <td th:text="${floor.id}">1</td>
+                            <td>
+                                <strong th:text="${floor.name}">Floor Name</strong>
+                            </td>
+                            <td>
+                                <span th:text="${floor.lineCount}">0</span>
+                                <span class="text-muted">/ 10</span>
+                                <div class="progress mt-1" style="height: 5px;">
+                                    <div class="progress-bar" 
+                                         th:style="'width: ' + ${floor.lineCount * 10} + '%'"
+                                         th:classappend="${floor.lineCount >= 10} ? 'bg-danger' : 'bg-primary'">
+                                    </div>
+                                </div>
+                            </td>
+                            <td sec:authorize="hasRole('ADMIN')">
+                                <div class="btn-group" role="group">
+                                    <a th:href="@{/floors/edit/{id}(id=${floor.id})}" 
+                                       class="btn btn-sm btn-outline-primary" 
+                                       title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-danger" 
+                                            th:onclick="'checkDelete(' + ${floor.id} + ')'"
+                                            title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                                <a th:href="@{/lines(floorId=${floor.id})}" 
+                                   class="btn btn-sm btn-outline-success ms-2" 
+                                   title="View Lines">
+                                    <i class="bi bi-diagram-3"></i> Lines
+                                </a>
+                            </td>
+                            <td sec:authorize="hasRole('OPERATOR')">
+                                <a th:href="@{/lines(floorId=${floor.id})}" 
+                                   class="btn btn-sm btn-outline-primary" 
+                                   title="View Lines">
+                                    <i class="bi bi-eye"></i> View Lines
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <nav th:if="${totalPages > 1}" aria-label="Floor pagination">
+                <ul class="pagination justify-content-center mb-0">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" 
+                           th:href="@{/floors(page=${currentPage - 1}, search=${search})}">
+                            Previous
+                        </a>
+                    </li>
+                    <li class="page-item" 
+                        th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                        th:classappend="${i == currentPage} ? 'active'">
+                        <a class="page-link" 
+                           th:href="@{/floors(page=${i}, search=${search})}"
+                           th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage >= totalPages - 1} ? 'disabled'">
+                        <a class="page-link" 
+                           th:href="@{/floors(page=${currentPage + 1}, search=${search})}">
+                            Next
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    
+    <!-- Delete Confirmation Modal Placeholder -->
+    <div id="deleteModalContainer"></div>
+    
+    <script>
+        function checkDelete(floorId) {
+            fetch('/floors/check-delete/' + floorId)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('deleteModalContainer').innerHTML = html;
+                    const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+                    modal.show();
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
+    
+</div>
+</body>
+</html>

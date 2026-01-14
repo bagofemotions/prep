@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Line Management - SMT Management</title>
+	<link rel="stylesheet" th:href="@{/css/global.css}">
+
+</head>
+<body>
+<div th:fragment="content">
+    
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Line Management</h1>
+        <a sec:authorize="hasRole('ADMIN')" href="/lines/create" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Add Line
+        </a>
+    </div>
+    
+    <!-- Alert Messages -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle"></i> <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    
+    <!-- Search and Filter Bar -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" action="/lines" class="row g-3">
+                <div class="col-md-6">
+                    <input type="text" name="search" class="form-control" 
+                           placeholder="Search lines by name..." 
+                           th:value="${search}">
+                </div>
+                <div class="col-md-4">
+                    <select name="floorId" class="form-select">
+                        <option value="">All Floors</option>
+                        <option th:each="floor : ${floors}" 
+                                th:value="${floor.id}" 
+                                th:text="${floor.name}"
+                                th:selected="${floor.id == selectedFloorId}">
+                            Floor Name
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Lines Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-diagram-3"></i> Lines
+                <span class="badge bg-success" th:text="${totalItems}">0</span>
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Line Name</th>
+                            <th>Floor</th>
+                            <th>Lane Type</th>
+                            <th>Direction</th>
+                            <th>Machines</th>
+                            <th sec:authorize="hasRole('ADMIN')">Actions</th>
+                            <th sec:authorize="hasRole('OPERATOR')">View</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(lines)}">
+                            <td colspan="8" class="text-center text-muted">
+                                <i class="bi bi-inbox"></i> No lines found
+                            </td>
+                        </tr>
+                        <tr th:each="line : ${lines}">
+                            <td th:text="${line.id}">1</td>
+                            <td>
+                                <strong th:text="${line.lineName}">Line Name</strong>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary" th:text="${line.floorName}">Floor</span>
+                            </td>
+                            <td>
+                                <span class="badge" 
+                                      th:classappend="${line.lane.name() == 'SINGLE_LANE'} ? 'bg-info' : 'bg-warning'"
+                                      th:text="${#strings.replace(line.lane.name(), '_', ' ')}">
+                                    Lane Type
+                                </span>
+                            </td>
+                            <td>
+                                <span th:if="${line.direction.name() == 'LEFT_TO_RIGHT'}">
+                                    <i class="bi bi-arrow-right text-success"></i> L→R
+                                </span>
+                                <span th:if="${line.direction.name() == 'RIGHT_TO_LEFT'}">
+                                    <i class="bi bi-arrow-left text-primary"></i> R→L
+                                </span>
+                            </td>
+                            <td>
+                                <span th:text="${line.machineCount}">0</span>
+                                <span class="text-muted">/ 10</span>
+                                <div class="progress mt-1" style="height: 5px;">
+                                    <div class="progress-bar" 
+                                         th:style="'width: ' + ${line.machineCount * 10} + '%'"
+                                         th:classappend="${line.machineCount >= 10} ? 'bg-danger' : 'bg-success'">
+                                    </div>
+                                </div>
+                            </td>
+                            <td sec:authorize="hasRole('ADMIN')">
+                                <div class="btn-group" role="group">
+                                    <a th:href="@{/lines/edit/{id}(id=${line.id})}" 
+                                       class="btn btn-sm btn-outline-primary" 
+                                       title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-danger" 
+                                            th:onclick="'checkDelete(' + ${line.id} + ')'"
+                                            title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                                <a th:href="@{/machines(lineId=${line.id})}" 
+                                   class="btn btn-sm btn-outline-info ms-2" 
+                                   title="View Machines">
+                                    <i class="bi bi-gear"></i> Machines
+                                </a>
+                            </td>
+                            <td sec:authorize="hasRole('OPERATOR')">
+                                <a th:href="@{/machines(lineId=${line.id})}" 
+                                   class="btn btn-sm btn-outline-primary" 
+                                   title="View Machines">
+                                    <i class="bi bi-eye"></i> View Machines
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <nav th:if="${totalPages > 1}" aria-label="Line pagination">
+                <ul class="pagination justify-content-center mb-0">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" 
+                           th:href="@{/lines(page=${currentPage - 1}, search=${search}, floorId=${selectedFloorId})}">
+                            Previous
+                        </a>
+                    </li>
+                    <li class="page-item" 
+                        th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                        th:classappend="${i == currentPage} ? 'active'">
+                        <a class="page-link" 
+                           th:href="@{/lines(page=${i}, search=${search}, floorId=${selectedFloorId})}"
+                           th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage >= totalPages - 1} ? 'disabled'">
+                        <a class="page-link" 
+                           th:href="@{/lines(page=${currentPage + 1}, search=${search}, floorId=${selectedFloorId})}">
+                            Next
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    
+    <!-- Delete Confirmation Modal Placeholder -->
+    <div id="deleteModalContainer"></div>
+    
+    <script>
+        function checkDelete(lineId) {
+            fetch('/lines/check-delete/' + lineId)
+                .then(response => response.text())
+                .then(html => {
+                    document.getElementById('deleteModalContainer').innerHTML = html;
+                    const modal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+                    modal.show();
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script>
+    
+</div>
+</body>
+</html>

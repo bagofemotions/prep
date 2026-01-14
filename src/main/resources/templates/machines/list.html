@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Machine Management - SMT Management</title>
+	<link rel="stylesheet" th:href="@{/css/global.css}">
+
+</head>
+<body>
+<div th:fragment="content">
+    
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Machine Management</h1>
+        <a sec:authorize="hasRole('ADMIN')" href="/machines/create" class="btn btn-info">
+            <i class="bi bi-plus-circle"></i> Add Machine
+        </a>
+    </div>
+    
+    <!-- Alert Messages -->
+    <div th:if="${success}" class="alert alert-success alert-dismissible fade show" role="alert">
+        <i class="bi bi-check-circle"></i> <span th:text="${success}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+        <i class="bi bi-exclamation-triangle"></i> <span th:text="${error}"></span>
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    
+    <!-- Search and Filter Bar -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" action="/machines" class="row g-3">
+                <div class="col-md-6">
+                    <input type="text" name="search" class="form-control" 
+                           placeholder="Search by serial, model, or company..." 
+                           th:value="${search}">
+                </div>
+                <div class="col-md-4">
+                    <select name="lineId" class="form-select">
+                        <option value="">All Lines</option>
+                        <option th:each="line : ${lines}" 
+                                th:value="${line.id}" 
+                                th:text="${line.lineName + ' (Floor: ' + line.floorName + ')'}"
+                                th:selected="${line.id == selectedLineId}">
+                            Line Name
+                        </option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-search"></i> Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Machines Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="bi bi-gear-fill"></i> Machines
+                <span class="badge bg-info" th:text="${totalItems}">0</span>
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Serial</th>
+                            <th>Model</th>
+                            <th>Type</th>
+                            <th>Year</th>
+                            <th>Company</th>
+                            <th>Line</th>
+                            <th>Floor</th>
+                            <th sec:authorize="hasRole('ADMIN')">Actions</th>
+                            <th sec:authorize="hasRole('OPERATOR')">Details</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(machines)}">
+                            <td colspan="9" class="text-center text-muted">
+                                <i class="bi bi-inbox"></i> No machines found
+                            </td>
+                        </tr>
+                        <tr th:each="machine : ${machines}">
+                            <td>
+                                <code th:text="${machine.machineSerial}">SERIAL</code>
+                            </td>
+                            <td>
+                                <strong th:text="${machine.model}">Model</strong>
+                            </td>
+                            <td>
+                                <span class="badge" 
+                                      th:classappend="${machine.type.name() == 'TYPE_A'} ? 'bg-primary' : 'bg-secondary'"
+                                      th:text="${machine.type.name()}">
+                                    Type
+                                </span>
+                            </td>
+                            <td th:text="${machine.yearOfManufacturing}">2020</td>
+                            <td th:text="${machine.manufacturingCompany}">Company</td>
+                            <td>
+                                <span class="badge bg-success" th:text="${machine.lineName}">Line</span>
+                            </td>
+                            <td>
+                                <span class="badge bg-primary" th:text="${machine.floorName}">Floor</span>
+                            </td>
+                            <td sec:authorize="hasRole('ADMIN')">
+                                <div class="btn-group" role="group">
+                                    <a th:href="@{/machines/edit/{serial}(serial=${machine.machineSerial})}" 
+                                       class="btn btn-sm btn-outline-primary" 
+                                       title="Edit">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                    <form th:action="@{/machines/delete/{serial}(serial=${machine.machineSerial})}" 
+                                          method="post" 
+                                          style="display: inline;"
+                                          onsubmit="return confirm('Are you sure you want to delete machine: ' + 
+                                                                    this.closest('tr').querySelector('code').textContent + '?');">
+                                        <button type="submit" 
+                                                class="btn btn-sm btn-outline-danger" 
+                                                title="Delete">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                            <td sec:authorize="hasRole('OPERATOR')">
+                                <button type="button" 
+                                        class="btn btn-sm btn-outline-info" 
+                                        th:attr="data-serial=${machine.machineSerial},
+                                                 data-model=${machine.model},
+                                                 data-type=${machine.type.name()},
+                                                 data-year=${machine.yearOfManufacturing},
+                                                 data-company=${machine.manufacturingCompany},
+                                                 data-line=${machine.lineName},
+                                                 data-floor=${machine.floorName}"
+                                        onclick="showMachineDetails(this)">
+                                    <i class="bi bi-eye"></i> View
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <nav th:if="${totalPages > 1}" aria-label="Machine pagination">
+                <ul class="pagination justify-content-center mb-0">
+                    <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                        <a class="page-link" 
+                           th:href="@{/machines(page=${currentPage - 1}, search=${search}, lineId=${selectedLineId})}">
+                            Previous
+                        </a>
+                    </li>
+                    <li class="page-item" 
+                        th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+                        th:classappend="${i == currentPage} ? 'active'">
+                        <a class="page-link" 
+                           th:href="@{/machines(page=${i}, search=${search}, lineId=${selectedLineId})}"
+                           th:text="${i + 1}">1</a>
+                    </li>
+                    <li class="page-item" th:classappend="${currentPage >= totalPages - 1} ? 'disabled'">
+                        <a class="page-link" 
+                           th:href="@{/machines(page=${currentPage + 1}, search=${search}, lineId=${selectedLineId})}">
+                            Next
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </div>
+    
+    <!-- Machine Details Modal (for Operators) -->
+    <div class="modal fade" id="machineDetailsModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-gear"></i> Machine Details
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <table class="table table-bordered mb-0">
+                        <tr>
+                            <th width="40%">Serial Number</th>
+                            <td id="detail-serial">-</td>
+                        </tr>
+                        <tr>
+                            <th>Model</th>
+                            <td id="detail-model">-</td>
+                        </tr>
+                        <tr>
+                            <th>Type</th>
+                            <td id="detail-type">-</td>
+                        </tr>
+                        <tr>
+                            <th>Year of Manufacturing</th>
+                            <td id="detail-year">-</td>
+                        </tr>
+                        <tr>
+                            <th>Manufacturing Company</th>
+                            <td id="detail-company">-</td>
+                        </tr>
+                        <tr>
+                            <th>Line</th>
+                            <td id="detail-line">-</td>
+                        </tr>
+                        <tr>
+                            <th>Floor</th>
+                            <td id="detail-floor">-</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function showMachineDetails(btn) {
+            document.getElementById('detail-serial').textContent = btn.dataset.serial;
+            document.getElementById('detail-model').textContent = btn.dataset.model;
+            document.getElementById('detail-type').textContent = btn.dataset.type;
+            document.getElementById('detail-year').textContent = btn.dataset.year;
+            document.getElementById('detail-company').textContent = btn.dataset.company;
+            document.getElementById('detail-line').textContent = btn.dataset.line;
+            document.getElementById('detail-floor').textContent = btn.dataset.floor;
+            
+            const modal = new bootstrap.Modal(document.getElementById('machineDetailsModal'));
+            modal.show();
+        }
+    </script>
+    
+</div>
+</body>
+</html>

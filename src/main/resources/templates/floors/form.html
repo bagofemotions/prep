@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::content})}">
+<head>
+    <title th:text="${floor.id != null ? 'Edit Floor' : 'Create Floor'}">Floor Form</title>
+	<link rel="stylesheet" th:href="@{/css/global.css}">
+
+</head>
+<body>
+<div th:fragment="content">
+    
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <span th:if="${floor.id == null}">Create New Floor</span>
+            <span th:if="${floor.id != null}">Edit Floor</span>
+        </h1>
+        <a href="/floors" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to List
+        </a>
+    </div>
+    
+    <!-- Floor Form -->
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-building"></i> Floor Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/floors/save}" th:object="${floor}" method="post">
+                        
+                        <!-- Hidden ID field for edit -->
+                        <input type="hidden" th:field="*{id}" />
+                        
+                        <!-- Floor Name -->
+                        <div class="mb-3">
+                            <label for="name" class="form-label">
+                                Floor Name <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="name" 
+                                   th:field="*{name}" 
+                                   placeholder="Enter floor name (e.g., Ground Floor, First Floor)"
+                                   required
+                                   minlength="2"
+                                   maxlength="100">
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i> 
+                                Floor name must be unique and between 2-100 characters
+                            </div>
+                        </div>
+                        
+                        <!-- Current Lines Info (for edit mode) -->
+                        <div th:if="${floor.id != null}" class="mb-3">
+                            <label class="form-label">Current Lines</label>
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i>
+                                This floor currently has <strong th:text="${floor.lineCount}">0</strong> line(s).
+                                <span th:if="${floor.lineCount < 10}">
+                                    You can add <strong th:text="${10 - floor.lineCount}">10</strong> more line(s).
+                                </span>
+                                <span th:if="${floor.lineCount >= 10}" class="text-danger">
+                                    <br><strong>Maximum limit reached!</strong> Cannot add more lines.
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- Info Box -->
+                        <div class="alert alert-warning">
+                            <h6 class="alert-heading">
+                                <i class="bi bi-exclamation-triangle"></i> Important Information
+                            </h6>
+                            <ul class="mb-0">
+                                <li>Each floor can have a maximum of <strong>10 lines</strong></li>
+                                <li>Floor names must be unique across the system</li>
+                                <li>Deleting a floor will also delete all its associated lines and machines</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-between">
+                            <a href="/floors" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i>
+                                <span th:if="${floor.id == null}">Create Floor</span>
+                                <span th:if="${floor.id != null}">Update Floor</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- View Lines (for edit mode) -->
+            <div th:if="${floor.id != null && floor.hasLines()}" class="card mt-3">
+                <div class="card-header bg-success text-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-diagram-3"></i> Associated Lines
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p>This floor has <strong th:text="${floor.lineCount}">0</strong> line(s) associated with it.</p>
+                    <a th:href="@{/lines(floorId=${floor.id})}" class="btn btn-outline-success">
+                        <i class="bi bi-eye"></i> View Lines
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+</body>
+</html>

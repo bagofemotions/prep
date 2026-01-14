@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::content})}">
+<head>
+    <title th:text="${machine.machineSerial != null ? 'Edit Machine' : 'Create Machine'}">Machine Form</title>
+	<link rel="stylesheet" th:href="@{/css/global.css}">
+
+	</head>
+<body>
+<div th:fragment="content">
+    
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <span th:if="${machine.machineSerial == null}">Create New Machine</span>
+            <span th:if="${machine.machineSerial != null}">Edit Machine</span>
+        </h1>
+        <a href="/machines" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to List
+        </a>
+    </div>
+    
+    <!-- Machine Form -->
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-gear-fill"></i> Machine Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/machines/save}" th:object="${machine}" method="post">
+                        
+                        <div class="row">
+                            <!-- Left Column -->
+                            <div class="col-md-6">
+                                <!-- Machine Serial -->
+                                <div class="mb-3">
+                                    <label for="machineSerial" class="form-label">
+                                        Machine Serial Number <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="machineSerial" 
+                                           th:field="*{machineSerial}" 
+                                           placeholder="Enter serial number (e.g., SMT-2024-001)"
+                                           th:readonly="${machine.machineSerial != null}"
+                                           required
+                                           minlength="3"
+                                           maxlength="50">
+                                    <div class="form-text">
+                                        <i class="bi bi-info-circle"></i> 
+                                        <span th:if="${machine.machineSerial == null}">
+                                            Serial must be unique (3-50 characters)
+                                        </span>
+                                        <span th:if="${machine.machineSerial != null}" class="text-warning">
+                                            <strong>Serial number cannot be changed after creation</strong>
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Model -->
+                                <div class="mb-3">
+                                    <label for="model" class="form-label">
+                                        Model <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="model" 
+                                           th:field="*{model}" 
+                                           placeholder="Enter model name"
+                                           required
+                                           minlength="2"
+                                           maxlength="100">
+                                    <div class="form-text">
+                                        <i class="bi bi-info-circle"></i> 
+                                        Machine model (2-100 characters)
+                                    </div>
+                                </div>
+                                
+                                <!-- Machine Type -->
+                                <div class="mb-3">
+                                    <label for="type" class="form-label">
+                                        Machine Type <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-select" id="type" th:field="*{type}" required>
+                                        <option value="">Select type...</option>
+                                        <option th:each="machineType : ${machineTypes}" 
+                                                th:value="${machineType}" 
+                                                th:text="${machineType.name()}">
+                                            Type
+                                        </option>
+                                    </select>
+                                    <div class="form-text">
+                                        <i class="bi bi-info-circle"></i> 
+                                        Select the machine type category
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Right Column -->
+                            <div class="col-md-6">
+                                <!-- Year of Manufacturing -->
+                                <div class="mb-3">
+                                    <label for="yearOfManufacturing" class="form-label">
+                                        Year of Manufacturing <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="number" 
+                                           class="form-control" 
+                                           id="yearOfManufacturing" 
+                                           th:field="*{yearOfManufacturing}" 
+                                           placeholder="Enter year (e.g., 2024)"
+                                           required
+                                           min="1900"
+                                           max="2100">
+                                    <div class="form-text">
+                                        <i class="bi bi-info-circle"></i> 
+                                        Year must be between 1900 and 2100
+                                    </div>
+                                </div>
+                                
+                                <!-- Manufacturing Company -->
+                                <div class="mb-3">
+                                    <label for="manufacturingCompany" class="form-label">
+                                        Manufacturing Company <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" 
+                                           class="form-control" 
+                                           id="manufacturingCompany" 
+                                           th:field="*{manufacturingCompany}" 
+                                           placeholder="Enter company name"
+                                           required
+                                           minlength="2"
+                                           maxlength="100">
+                                    <div class="form-text">
+                                        <i class="bi bi-info-circle"></i> 
+                                        Company name (2-100 characters)
+                                    </div>
+                                </div>
+                                
+                                <!-- Line Selection -->
+                                <div class="mb-3">
+                                    <label for="lineMapping" class="form-label">
+                                        Line <span class="text-danger">*</span>
+                                    </label>
+                                    <select class="form-select" 
+                                            id="lineMapping" 
+                                            th:field="*{lineMapping.id}" 
+                                            required>
+                                        <option value="">Select a line...</option>
+                                        <optgroup th:each="line : ${lines}" th:label="${line.lineName}">
+                                            <option th:value="${line.id}" 
+                                                    th:text="${line.lineName + ' (Machines: ' + line.machineCount + '/10, Floor: ' + line.floorName + ')'}">
+                                                Line Name
+                                            </option>
+                                        </optgroup>
+                                    </select>
+                                    <div class="form-text">
+                                        <i class="bi bi-info-circle"></i> 
+                                        Select the line this machine belongs to (max 10 machines per line)
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Info Box -->
+                        <div class="alert alert-warning mt-3">
+                            <h6 class="alert-heading">
+                                <i class="bi bi-exclamation-triangle"></i> Important Information
+                            </h6>
+                            <ul class="mb-0">
+                                <li>Each line can have a maximum of <strong>10 machines</strong></li>
+                                <li>Machine serial numbers must be unique across the system</li>
+                                <li>Serial numbers cannot be changed after creation</li>
+                                <li>All fields marked with <span class="text-danger">*</span> are required</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="/machines" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-info">
+                                <i class="bi bi-save"></i>
+                                <span th:if="${machine.machineSerial == null}">Create Machine</span>
+                                <span th:if="${machine.machineSerial != null}">Update Machine</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Current Location Info (for edit mode) -->
+            <div th:if="${machine.machineSerial != null}" class="card mt-3">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-geo-alt"></i> Current Location
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <strong>Floor:</strong>
+                            <p th:text="${machine.floorName}">Floor Name</p>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Line:</strong>
+                            <p th:text="${machine.lineName}">Line Name</p>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Serial:</strong>
+                            <p><code th:text="${machine.machineSerial}">SERIAL</code></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+</body>
+</html>

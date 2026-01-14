@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::content})}">
+<head>
+    <title>Admin Dashboard - SMT Management</title>
+	<link rel="stylesheet" th:href="@{/css/global.css}">
+
+</head>
+<body>
+<div th:fragment="content">
+    
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Admin Dashboard</h1>
+        <div class="text-muted">
+            <i class="bi bi-shield-check"></i> Administrator Access
+        </div>
+    </div>
+    
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <!-- Total Floors Card -->
+        <div class="col-md-4 mb-3">
+            <div class="card border-primary">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Total Floors</h6>
+                            <h2 class="mb-0" th:text="${totalFloors}">0</h2>
+                        </div>
+                        <div class="text-primary">
+                            <i class="bi bi-building" style="font-size: 3rem;"></i>
+                        </div>
+                    </div>
+                    <a href="/floors" class="btn btn-sm btn-outline-primary mt-3 w-100">
+                        <i class="bi bi-eye"></i> View Floors
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Lines Card -->
+        <div class="col-md-4 mb-3">
+            <div class="card border-success">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Total Lines</h6>
+                            <h2 class="mb-0" th:text="${totalLines}">0</h2>
+                        </div>
+                        <div class="text-success">
+                            <i class="bi bi-diagram-3" style="font-size: 3rem;"></i>
+                        </div>
+                    </div>
+                    <a href="/lines" class="btn btn-sm btn-outline-success mt-3 w-100">
+                        <i class="bi bi-eye"></i> View Lines
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Total Machines Card -->
+        <div class="col-md-4 mb-3">
+            <div class="card border-info">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Total Machines</h6>
+                            <h2 class="mb-0" th:text="${totalMachines}">0</h2>
+                        </div>
+                        <div class="text-info">
+                            <i class="bi bi-gear-fill" style="font-size: 3rem;"></i>
+                        </div>
+                    </div>
+                    <a href="/machines" class="btn btn-sm btn-outline-info mt-3 w-100">
+                        <i class="bi bi-eye"></i> View Machines
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Quick Actions -->
+    <div class="card mb-4">
+        <div class="card-header bg-primary text-white">
+            <h5 class="mb-0"><i class="bi bi-lightning-fill"></i> Quick Actions</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="bi bi-building-add text-primary" style="font-size: 3rem;"></i>
+                            <h5 class="mt-3">Manage Floors</h5>
+                            <p class="text-muted">Add, edit, or delete floors</p>
+                            <div class="d-grid gap-2">
+                                <a href="/floors/create" class="btn btn-primary">
+                                    <i class="bi bi-plus-circle"></i> Add Floor
+                                </a>
+                                <a href="/floors" class="btn btn-outline-primary">
+                                    <i class="bi bi-list-ul"></i> View All
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="bi bi-diagram-3-fill text-success" style="font-size: 3rem;"></i>
+                            <h5 class="mt-3">Manage Lines</h5>
+                            <p class="text-muted">Add, edit, or delete production lines</p>
+                            <div class="d-grid gap-2">
+                                <a href="/lines/create" class="btn btn-success">
+                                    <i class="bi bi-plus-circle"></i> Add Line
+                                </a>
+                                <a href="/lines" class="btn btn-outline-success">
+                                    <i class="bi bi-list-ul"></i> View All
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100 shadow-sm">
+                        <div class="card-body text-center">
+                            <i class="bi bi-gear-wide-connected text-info" style="font-size: 3rem;"></i>
+                            <h5 class="mt-3">Manage Machines</h5>
+                            <p class="text-muted">Add, edit, or delete machines</p>
+                            <div class="d-grid gap-2">
+                                <a href="/machines/create" class="btn btn-info">
+                                    <i class="bi bi-plus-circle"></i> Add Machine
+                                </a>
+                                <a href="/machines" class="btn btn-outline-info">
+                                    <i class="bi bi-list-ul"></i> View All
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- System Information -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0"><i class="bi bi-info-circle"></i> System Information</h5>
+        </div>
+        <div class="card-body">
+            <ul class="list-unstyled mb-0">
+                <li class="mb-2">
+                    <strong>Hierarchy Limits:</strong>
+                    <ul class="mt-1">
+                        <li>Each Floor can have a maximum of <strong>10 Lines</strong></li>
+                        <li>Each Line can have a maximum of <strong>10 Machines</strong></li>
+                    </ul>
+                </li>
+                <li class="mb-2">
+                    <strong>Access Level:</strong> <span class="badge bg-primary">Administrator</span>
+                </li>
+                <li>
+                    <strong>Permissions:</strong> Full CRUD access to all entities
+                </li>
+            </ul>
+        </div>
+    </div>
+    
+</div>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{layout/base :: layout(~{::title}, ~{::content})}">
+<head>
+    <title th:text="${line.id != null ? 'Edit Line' : 'Create Line'}">Line Form</title>
+	<link rel="stylesheet" th:href="@{/css/global.css}">
+
+	</head>
+<body>
+<div th:fragment="content">
+    
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">
+            <span th:if="${line.id == null}">Create New Line</span>
+            <span th:if="${line.id != null}">Edit Line</span>
+        </h1>
+        <a href="/lines" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to List
+        </a>
+    </div>
+    
+    <!-- Line Form -->
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="bi bi-diagram-3"></i> Line Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form th:action="@{/lines/save}" th:object="${line}" method="post">
+                        
+                        <!-- Hidden ID field for edit -->
+                        <input type="hidden" th:field="*{id}" />
+                        
+                        <!-- Line Name -->
+                        <div class="mb-3">
+                            <label for="lineName" class="form-label">
+                                Line Name <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="lineName" 
+                                   th:field="*{lineName}" 
+                                   placeholder="Enter line name (e.g., Line 1, Assembly Line A)"
+                                   required
+                                   minlength="2"
+                                   maxlength="100">
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i> 
+                                Line name must be unique and between 2-100 characters
+                            </div>
+                        </div>
+                        
+                        <!-- Floor Selection -->
+                        <div class="mb-3">
+                            <label for="floorMapping" class="form-label">
+                                Floor <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" 
+                                    id="floorMapping" 
+                                    th:field="*{floorMapping.id}" 
+                                    required>
+                                <option value="">Select a floor...</option>
+                                <option th:each="floor : ${floors}" 
+                                        th:value="${floor.id}" 
+                                        th:text="${floor.name + ' (Lines: ' + floor.lineCount + '/10)'}">
+                                    Floor Name
+                                </option>
+                            </select>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i> 
+                                Select the floor this line belongs to (max 10 lines per floor)
+                            </div>
+                        </div>
+                        
+                        <!-- Lane Type -->
+                        <div class="mb-3">
+                            <label for="lane" class="form-label">
+                                Lane Type <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="lane" th:field="*{lane}" required>
+                                <option value="">Select lane type...</option>
+                                <option th:each="laneType : ${laneTypes}" 
+                                        th:value="${laneType}" 
+                                        th:text="${#strings.replace(laneType.name(), '_', ' ')}">
+                                    Lane Type
+                                </option>
+                            </select>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i> 
+                                Choose between single lane or multi-lane configuration
+                            </div>
+                        </div>
+                        
+                        <!-- Direction -->
+                        <div class="mb-3">
+                            <label for="direction" class="form-label">
+                                Direction <span class="text-danger">*</span>
+                            </label>
+                            <select class="form-select" id="direction" th:field="*{direction}" required>
+                                <option value="">Select direction...</option>
+                                <option th:each="dir : ${directions}" 
+                                        th:value="${dir}">
+                                    <span th:if="${dir.name() == 'LEFT_TO_RIGHT'}">Left to Right (→)</span>
+                                    <span th:if="${dir.name() == 'RIGHT_TO_LEFT'}">Right to Left (←)</span>
+                                </option>
+                            </select>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i> 
+                                Select the production flow direction
+                            </div>
+                        </div>
+                        
+                        <!-- Current Machines Info (for edit mode) -->
+                        <div th:if="${line.id != null}" class="mb-3">
+                            <label class="form-label">Current Machines</label>
+                            <div class="alert alert-info">
+                                <i class="bi bi-info-circle"></i>
+                                This line currently has <strong th:text="${line.machineCount}">0</strong> machine(s).
+                                <span th:if="${line.machineCount < 10}">
+                                    You can add <strong th:text="${10 - line.machineCount}">10</strong> more machine(s).
+                                </span>
+                                <span th:if="${line.machineCount >= 10}" class="text-danger">
+                                    <br><strong>Maximum limit reached!</strong> Cannot add more machines.
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <!-- Info Box -->
+                        <div class="alert alert-warning">
+                            <h6 class="alert-heading">
+                                <i class="bi bi-exclamation-triangle"></i> Important Information
+                            </h6>
+                            <ul class="mb-0">
+                                <li>Each line can have a maximum of <strong>10 machines</strong></li>
+                                <li>Each floor can have a maximum of <strong>10 lines</strong></li>
+                                <li>Line names must be unique across the system</li>
+                                <li>Deleting a line will also delete all its associated machines</li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Form Actions -->
+                        <div class="d-flex justify-content-between">
+                            <a href="/lines" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="bi bi-save"></i>
+                                <span th:if="${line.id == null}">Create Line</span>
+                                <span th:if="${line.id != null}">Update Line</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- View Machines (for edit mode) -->
+            <div th:if="${line.id != null && line.hasMachines()}" class="card mt-3">
+                <div class="card-header bg-info text-white">
+                    <h6 class="mb-0">
+                        <i class="bi bi-gear"></i> Associated Machines
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p>This line has <strong th:text="${line.machineCount}">0</strong> machine(s) associated with it.</p>
+                    <a th:href="@{/machines(lineId=${line.id})}" class="btn btn-outline-info">
+                        <i class="bi bi-eye"></i> View Machines
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+</body>
+</html>
