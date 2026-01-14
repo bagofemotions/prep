@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <div th:fragment="input(label, name, type, placeholder, value, required, readonly)" class="form-group">
+        <label th:for="${name}">
+            <span th:text="${label}">Label</span>
+            <span th:if="${required}" class="text-danger">*</span>
+        </label>
+        <div class="input-wrapper">
+            <input th:type="${type} ?: 'text'" 
+                   th:id="${name}" 
+                   th:name="${name}" 
+                   th:value="${value}"
+                   th:placeholder="${placeholder}"
+                   th:required="${required}"
+                   th:readonly="${readonly}"
+                   class="form-control">
+            <i th:if="${type == 'password'}" class='bx bx-show toggle-password' 
+               onclick="togglePassword(this)"></i>
+        </div>
+        <small class="error-msg text-danger" th:if="${#fields.hasErrors(name)}" th:errors="*{__${name}__}"></small>
+    </div>
+
+    <div th:fragment="textarea(label, name, placeholder, rows, value)" class="form-group">
+        <label th:for="${name}" th:text="${label}">Label</label>
+        <textarea th:id="${name}" 
+                  th:name="${name}" 
+                  th:rows="${rows} ?: 4" 
+                  th:placeholder="${placeholder}" 
+                  th:text="${value}"
+                  class="form-control"></textarea>
+    </div>
+
+    <div th:fragment="select(label, name, options, selectedValue)" class="form-group">
+        <label th:for="${name}" th:text="${label}">Label</label>
+        <div class="select-wrapper">
+            <select th:id="${name}" th:name="${name}" class="form-control">
+                <option value="" disabled th:selected="${selectedValue == null}">Select Option</option>
+                <option th:each="opt : ${options}" 
+                        th:value="${opt.key}" 
+                        th:text="${opt.value}"
+                        th:selected="${opt.key == selectedValue}"></option>
+            </select>
+            <i class='bx bx-chevron-down arrow-icon'></i>
+        </div>
+    </div>
+
+    <div th:fragment="toggle(label, name, checked)" class="form-group toggle-group">
+        <span th:text="${label}" class="toggle-label">Active?</span>
+        <label class="switch-generic">
+            <input type="checkbox" th:id="${name}" th:name="${name}" th:checked="${checked}">
+            <span class="slider round"></span>
+        </label>
+    </div>
+
+    <div th:fragment="file-upload(label, name, accept)" class="form-group">
+        <label th:text="${label}">Upload</label>
+        <div class="file-upload-wrapper">
+            <input type="file" th:id="${name}" th:name="${name}" th:accept="${accept}" class="file-input">
+            <div class="file-custom-label">
+                <i class='bx bx-cloud-upload'></i>
+                <span>Choose a file...</span>
+            </div>
+        </div>
+    </div>
+
+    <div th:fragment="search-bar(placeholder, hxUrl, hxTarget)" class="search-box">
+        <i class='bx bx-search'></i>
+        <input type="text" 
+               th:placeholder="${placeholder}"
+               th:attr="hx-get=${hxUrl}, hx-target=${hxTarget}"
+               hx-trigger="keyup changed delay:500ms"
+               name="search">
+    </div>
+
+    <button th:fragment="btn-submit(text, extraClass)" type="submit" 
+            class="btn-primary" 
+            th:classappend="${extraClass}">
+        <span th:text="${text}">Save</span>
+        <i class="bx bx-loader-alt bx-spin htmx-indicator"></i>
+    </button>
+	
+	<div th:fragment="radioGroup(label, name, options, checkedValue)" class="mb-3">
+	        <label class="form-label d-block" th:text="${label}">Label</label>
+	        <div class="form-check form-check-inline" th:each="opt : ${options}">
+	            <input class="form-check-input" type="radio" 
+	                   th:name="${name}" 
+	                   th:id="${name} + '-' + ${opt.key}" 
+	                   th:value="${opt.key}"
+	                   th:checked="${opt.key == checkedValue}">
+	            <label class="form-check-label" th:for="${name} + '-' + ${opt.key}" th:text="${opt.value}">Option</label>
+	        </div>
+	    </div>
+
+	    <div th:fragment="inputDate(label, name, value, required)" class="mb-3">
+	        <label th:for="${name}" class="form-label">
+	            <span th:text="${label}">Date</span>
+	            <span th:if="${required}" class="text-danger">*</span>
+	        </label>
+	        <input type="date" class="form-control" th:id="${name}" th:name="${name}" th:value="${value}" th:required="${required}">
+	    </div>
+
+	    <div th:fragment="tagInput(tags)" class="mb-3">
+	        <label class="form-label">Selected Tags:</label>
+	        <div class="d-flex flex-wrap gap-2 p-2 border rounded bg-light">
+	            <span th:each="tag : ${tags}" class="badge bg-primary d-flex align-items-center">
+	                <span th:text="${tag}">Tag Name</span>
+	                <i class="bi bi-x ms-2 cursor-pointer" onclick="this.parentElement.remove()" style="cursor: pointer;"></i>
+	            </span>
+	            <input type="text" class="border-0 bg-transparent flex-grow-1" style="outline: none; min-width: 100px;" placeholder="Add tag...">
+	        </div>
+	    </div>
+
+	    <div th:fragment="filterGroup(searchUrl)" class="d-flex justify-content-between align-items-center mb-4 gap-3">
+	        <div class="flex-grow-1">
+	            <div th:replace="~{fragments/forms :: searchBar(url=${searchUrl}, target='#main-table')}"></div>
+	        </div>
+	        <div class="d-flex gap-2">
+	           <button class="btn btn-outline-secondary"><i class="bi bi-funnel"></i> Filters</button>
+	        </div>
+	    </div>
+
+</body>
+</html>

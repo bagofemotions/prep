@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <a th:fragment="btn-link(text, url, icon)" th:href="@{${url}}" class="btn-primary">
+        <i th:if="${icon}" th:class="'bx ' + ${icon}"></i>
+        <span th:text="${text}">Link</span>
+    </a>
+
+    <button th:fragment="btn-icon(icon, color, hxUrl)" 
+            class="btn-icon" 
+            th:style="'color: var(--' + ${color} + ')'"
+            th:attr="hx-get=${hxUrl}">
+        <i th:class="'bx ' + ${icon}"></i>
+    </button>
+
+    <li th:fragment="stat-card(title, value, icon, color)">
+        <i class='bx' th:classappend="${icon}" 
+           th:style="'background: var(--light-' + ${color} + '); color: var(--' + ${color} + ');'"></i>
+        <span class="text">
+            <h3 th:text="${value}">0</h3>
+            <p th:text="${title}">Title</p>
+        </span>
+    </li>
+
+    <span th:fragment="badge(text, status)" 
+          class="status-badge" 
+          th:classappend="${status}" 
+          th:text="${text}">Pending</span>
+
+    <div th:fragment="avatar(imgUrl, name)" class="avatar-wrapper">
+        <img th:if="${imgUrl != null}" th:src="${imgUrl}" alt="User">
+        <span th:if="${imgUrl == null}" class="avatar-initials" 
+              th:text="${#strings.substring(name,0,2).toUpperCase()}">AB</span>
+    </div>
+
+    <div th:fragment="empty-state(message)" class="empty-state">
+        <i class='bx bx-folder-open'></i>
+        <p th:text="${message}">No records found.</p>
+    </div>
+
+    <div th:fragment="alert(type, message)" th:class="'alert alert-' + ${type}" role="alert">
+        <i class='bx' th:classappend="${type == 'success' ? 'bxs-check-circle' : 'bxs-error-circle'}"></i>
+        <span th:text="${message}">Message</span>
+        <button type="button" class="close-btn" onclick="this.parentElement.remove()">&times;</button>
+    </div>
+
+    <div th:fragment="modal(id, title)" th:id="${id}" class="modal-backdrop">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 th:text="${title}">Title</h3>
+                <span class="close-modal" onclick="closeModal(this)">&times;</span>
+            </div>
+            <div class="modal-body" id="modal-target-body"></div>
+        </div>
+    </div>
+
+    <ul th:fragment="breadcrumb(pathMap)" class="breadcrumb">
+        <li th:each="item : ${pathMap}">
+            <a th:href="@{${item.value}}" th:text="${item.key}" th:class="${itemStat.last} ? 'active' : ''"></a>
+            <i th:unless="${itemStat.last}" class='bx bx-chevron-right'></i>
+        </li>
+    </ul>
+
+    <div th:fragment="tabs(tabList, activeTab)" class="tab-container">
+        <div class="tabs">
+            <a th:each="tab : ${tabList}" 
+               th:text="${tab.label}" 
+               th:classappend="${tab.id == activeTab} ? 'active' : ''"
+               class="tab-item"></a>
+        </div>
+    </div>
+
+    <div th:fragment="accordion-item(title, contentId)" class="accordion-item">
+        <button class="accordion-header" onclick="toggleAccordion(this)">
+            <span th:text="${title}">Title</span>
+            <i class='bx bx-chevron-down'></i>
+        </button>
+        <div class="accordion-body" style="display:none;">
+             <th:block th:replace="${contentId}"></th:block>
+        </div>
+    </div>
+
+    <div th:fragment="timeline(events)" class="timeline">
+        <div th:each="event : ${events}" class="timeline-item">
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+                <small th:text="${event.date}" class="text-muted">Date</small>
+                <h5 th:text="${event.title}">Title</h5>
+                <p th:text="${event.description}">Desc</p>
+            </div>
+        </div>
+    </div>
+
+    <div th:fragment="stepper(steps, currentStepIndex)" class="stepper">
+        <div th:each="step, iter : ${steps}" 
+             class="step" 
+             th:classappend="${iter.index <= currentStepIndex} ? 'completed' : ''">
+            <div class="step-circle" th:text="${iter.count}">1</div>
+            <div class="step-label" th:text="${step}">Step Name</div>
+            <div th:unless="${iter.last}" class="step-line"></div>
+        </div>
+    </div>
+
+    <div th:fragment="skeleton-row" class="skeleton-row">
+        <div class="skeleton-block w-full"></div>
+    </div>
+
+    <div th:fragment="skeleton-card" class="skeleton-card">
+        <div class="skeleton-icon"></div>
+        <div class="skeleton-text">
+            <div class="skeleton-line short"></div>
+            <div class="skeleton-line long"></div>
+        </div>
+    </div>
+	
+	<a th:fragment="btnPrimary(text, url)" th:href="@{${url}}" class="btn btn-primary">
+	        <span th:text="${text}">Action</span>
+	    </a>
+
+	    <a th:fragment="btnSecondary(text, url)" th:href="@{${url}}" class="btn btn-outline-secondary">
+	        <span th:text="${text}">Cancel</span>
+	    </a>
+
+	    <a th:fragment="linkButton(text, url)" th:href="@{${url}}" class="text-decoration-none fw-bold text-primary px-2">
+	        <span th:text="${text}">Link</span>
+	    </a>
+
+
+	    <div th:fragment="cardWrapper(title, showHeader)" class="card shadow-sm border-0 mb-4">
+	        <div th:if="${showHeader}" class="card-header bg-white border-bottom-0 pt-3 pb-0">
+	            <h5 class="card-title fw-bold" th:text="${title}">Card Title</h5>
+	        </div>
+	        <div class="card-body">
+	            <div th:replace="${bodyContent} ?: _"></div> 
+	        </div>
+	    </div>
+
+	    <div th:fragment="divider(text)" class="d-flex align-items-center my-4">
+	        <hr class="flex-grow-1 m-0">
+	        <span th:if="${text != null}" class="px-3 text-muted small text-uppercase" th:text="${text}">OR</span>
+	        <hr th:if="${text != null}" class="flex-grow-1 m-0">
+	    </div>
+
+	    <div th:fragment="gridGallery(items)" class="row row-cols-1 row-cols-md-3 g-4">
+	        <div th:each="item : ${items}" class="col">
+	            <div class="card h-100">
+	                <div class="card-body" th:text="${item}">Item</div>
+	            </div>
+	        </div>
+	    </div>
+
+
+	    <nav th:fragment="breadcrumbs(crumbs)" aria-label="breadcrumb">
+	        <ol class="breadcrumb">
+	            <li class="breadcrumb-item"><a href="/">Home</a></li>
+	            <li th:each="crumb, iterStat : ${crumbs}" 
+	                class="breadcrumb-item" 
+	                th:classappend="${iterStat.last} ? 'active'"
+	                th:aria-current="${iterStat.last} ? 'page'">
+	                <a th:if="${!iterStat.last}" th:href="@{${crumb.value}}" th:text="${crumb.key}">Link</a>
+	                <span th:if="${iterStat.last}" th:text="${crumb.key}">Current</span>
+	            </li>
+	        </ol>
+	    </nav>
+
+	    <div th:fragment="pageHeader(title, subtitle)" class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+	        <div>
+	            <h2 class="fw-bold mb-0" th:text="${title}">Page Title</h2>
+	            <p class="text-muted small mb-0" th:text="${subtitle}">Subtitle here</p>
+	        </div>
+	        <div>
+	            </div>
+	    </div>
+
+	    <ul th:fragment="tabs(tabs, activeTab)" class="nav nav-tabs mb-4">
+	        <li class="nav-item" th:each="tab : ${tabs}">
+	            <a class="nav-link" 
+	               th:classappend="${tab.key == activeTab} ? 'active fw-bold' : 'text-muted'" 
+	               th:href="@{${tab.value}}" 
+	               th:text="${tab.key}">Tab Name</a>
+	        </li>
+	    </ul>
+
+
+	    <div th:fragment="alertToast(type, message)" 
+	         class="alert alert-dismissible fade show" 
+	         th:classappend="'alert-' + ${type}" role="alert">
+	        <i class="bi" th:classappend="${type == 'success'} ? 'bi-check-circle' : 'bi-exclamation-triangle'"></i>
+	        <span class="ms-2" th:text="${message}">Message</span>
+	        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+	    </div>
+
+	    <div th:fragment="progressBar(percentage, label)" class="mb-3">
+	        <div class="d-flex justify-content-between small mb-1">
+	            <span th:text="${label}">Processing...</span>
+	            <span th:text="${percentage} + '%'">0%</span>
+	        </div>
+	        <div class="progress" style="height: 8px;">
+	            <div class="progress-bar" role="progressbar" 
+	                 th:style="'width: ' + ${percentage} + '%'" 
+	                 th:aria-valuenow="${percentage}" aria-valuemin="0" aria-valuemax="100"></div>
+	        </div>
+	    </div>
+
+	    <div th:fragment="loaderOverlay(id)" th:id="${id}" class="d-none position-fixed top-0 start-0 w-100 h-100 bg-white opacity-75 d-flex justify-content-center align-items-center" style="z-index: 9999;">
+	        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+	    </div>
+
+	    <div th:fragment="stepper(steps, currentStepIndex)" class="d-flex justify-content-between mb-5 position-relative">
+	        <div class="position-absolute top-50 start-0 w-100 translate-middle-y bg-light" style="height: 4px; z-index: 0;"></div>
+	        <div th:each="step, iter : ${steps}" class="position-relative text-center" style="z-index: 1;">
+	            <div class="rounded-circle d-flex align-items-center justify-content-center mx-auto mb-2 fw-bold border"
+	                 style="width: 35px; height: 35px;"
+	                 th:classappend="${iter.index <= currentStepIndex} ? 'bg-primary text-white border-primary' : 'bg-white text-muted border-secondary'"
+	                 th:text="${iter.count}">1</div>
+	            <span class="small fw-bold" 
+	                  th:classappend="${iter.index <= currentStepIndex} ? 'text-dark' : 'text-muted'"
+	                  th:text="${step}">Step Name</span>
+	        </div>
+	    </div>
+
+	    <div th:fragment="codeBlock(codeId, content)" class="position-relative bg-dark text-light p-3 rounded font-monospace small">
+	        <button class="btn btn-sm btn-light position-absolute top-0 end-0 m-2" 
+	                onclick="navigator.clipboard.writeText(this.nextElementSibling.innerText)">Copy</button>
+	        <pre class="m-0" th:text="${content}">UUID-1234-5678</pre>
+	    </div>
+
+	    <div th:fragment="skeletonCard" class="card h-100 border-0 shadow-sm" aria-hidden="true">
+	        <div class="card-body">
+	            <h5 class="card-title placeholder-glow">
+	                <span class="placeholder col-6"></span>
+	            </h5>
+	            <p class="card-text placeholder-glow">
+	                <span class="placeholder col-7"></span>
+	                <span class="placeholder col-4"></span>
+	                <span class="placeholder col-4"></span>
+	                <span class="placeholder col-6"></span>
+	            </p>
+	        </div>
+	    </div>
+
+	    <span th:fragment="tooltip(text)" class="d-inline-block" tabindex="0" data-bs-toggle="tooltip" th:title="${text}">
+	        <i class="bi bi-question-circle-fill text-muted"></i>
+	    </span>
+
+	    <div th:fragment="dataTableSimple(headers, rows)" class="table-responsive">
+	        <table class="table table-hover align-middle">
+	            <thead class="table-light">
+	                <tr>
+	                    <th th:each="header : ${headers}" th:text="${header}">Header</th>
+	                </tr>
+	            </thead>
+	            <tbody>
+	                <tr th:if="${#lists.isEmpty(rows)}">
+	                    <td th:colspan="${#lists.size(headers)}" class="text-center">No data available</td>
+	                </tr>
+	            </tbody>
+	        </table>
+	    </div>
+
+	    <dl th:fragment="descriptionList(dataMap)" class="row">
+	        <th:block th:each="entry : ${dataMap}">
+	            <dt class="col-sm-3 text-muted" th:text="${entry.key}">Label</dt>
+	            <dd class="col-sm-9" th:text="${entry.value}">Value</dd>
+	        </th:block>
+	    </dl>
+
+</body>
+</html>

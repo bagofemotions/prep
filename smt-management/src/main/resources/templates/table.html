@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<body>
+
+    <div layout:fragment="content">
+        
+        <div th:replace="~{fragments/ui :: pageHeader(title='Users', subtitle='Manage system access and roles')}"></div>
+
+        <div th:replace="~{fragments/ui :: cardWrapper(title='System Users', showHeader=true)}">
+            
+            <div class="d-flex justify-content-between mb-3">
+                <div class="w-50">
+                    <div th:replace="~{fragments/forms :: searchBar(url='/users/search', target='#userTable')}"></div>
+                </div>
+                <button class="btn btn-primary" 
+                        hx-get="/users/create" 
+                        hx-target="#modal-content-target" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#genericModal">
+                    <i class="bi bi-plus-lg me-2"></i> Add New User
+                </button>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table table-hover align-middle" id="userTable">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="u : ${users.content}">
+                            <td>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div th:replace="~{fragments/ui :: avatar(imageUrl=null, name=${u.fullName})}"></div>
+                                    <div>
+                                        <div class="fw-bold" th:text="${u.fullName}">Name</div>
+                                        <div class="small text-muted" th:text="${u.email}">Email</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td th:text="${u.role}">Admin</td>
+                            <td>
+                                <div th:replace="~{fragments/ui :: statusBadge(status=${u.status})}"></div>
+                            </td>
+                            <td class="text-end">
+                                <button class="btn btn-sm btn-light text-primary"
+                                        th:hx-get="@{/users/edit/{id}(id=${u.id})}"
+                                        hx-target="#modal-content-target"
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#genericModal">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+
+                                <button class="btn btn-sm btn-light text-danger"
+                                        th:hx-delete="@{/users/delete/{id}(id=${u.id})}"
+                                        hx-confirm="Are you sure you want to delete this user?"
+                                        hx-target="body">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div th:replace="~{fragments/ui :: pagination(page=${users}, baseUrl='/users')}"></div>
+
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/ui :: modalDialog(id='genericModal', title='User Details')}"></div>
+
+</body>
+</html>

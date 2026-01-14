@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<body>
+
+    <div th:fragment="userForm">
+        <form th:action="@{/users/save}" th:object="${user}" method="post">
+            
+            <input type="hidden" th:field="*{id}">
+
+            <div class="row">
+                <div class="col-md-12">
+                    <div th:replace="~{fragments/forms :: inputText(
+                        label='Full Name', name='fullName', value=*{fullName}, type='text', placeholder='John Doe', required=true
+                    )}"></div>
+                </div>
+                
+                <div class="col-md-12">
+                    <div th:replace="~{fragments/forms :: inputText(
+                        label='Email Address', name='email', value=*{email}, type='email', placeholder='john@example.com', required=true
+                    )}"></div>
+                </div>
+
+                <div class="col-md-6">
+                    <div th:replace="~{fragments/forms :: selectField(
+                        label='Role', name='role', 
+                        options=${ {'Admin':'Admin', 'Editor':'Editor', 'Viewer':'Viewer'} }, 
+                        selectedValue=*{role}
+                    )}"></div>
+                </div>
+
+                <div class="col-md-6">
+                     <div th:replace="~{fragments/forms :: radioGroup(
+                        label='Status', name='status', 
+                        options=${ {'Active':'Active', 'Inactive':'Inactive'} }, 
+                        checkedValue=*{status}
+                     )}"></div>
+                </div>
+            </div>
+
+            <div class="modal-footer px-0 pb-0 border-0 mt-3">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save User</button>
+            </div>
+
+        </form>
+    </div>
+
+</body>
+</html>
