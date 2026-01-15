@@ -4,7 +4,7 @@
       th:replace="~{layout/base :: layout(~{::title}, ~{::content})}">
 <head>
     <title>Machine Management - SMT Management</title>
-	<link rel="stylesheet" th:href="@{/css/global.css}">
+    <link rel="stylesheet" th:href="@{/css/global.css}">
 
 </head>
 <body>
@@ -71,6 +71,8 @@
                     <thead class="table-light">
                         <tr>
                             <th>Serial</th>
+                            <!-- Added: Image column -->
+                            <th>Image</th>
                             <th>Model</th>
                             <th>Type</th>
                             <th>Year</th>
@@ -83,7 +85,7 @@
                     </thead>
                     <tbody>
                         <tr th:if="${#lists.isEmpty(machines)}">
-                            <td colspan="9" class="text-center text-muted">
+                            <td colspan="10" class="text-center text-muted">
                                 <i class="bi bi-inbox"></i> No machines found
                             </td>
                         </tr>
@@ -92,22 +94,33 @@
                                 <code th:text="${machine.machineSerial}">SERIAL</code>
                             </td>
                             <td>
+                                <img th:if="${machine.hasImage()}" 
+                                     th:src="'data:image/jpeg;base64,' + ${machine.imageBase64}" 
+                                     style="max-width: 50px; max-height: 50px;" 
+                                     alt="Machine">
+                                <span th:if="${!machine.hasImage()}" class="text-muted small">No image</span>
+                            </td>
+                            <td>
                                 <strong th:text="${machine.model}">Model</strong>
                             </td>
                             <td>
                                 <span class="badge" 
                                       th:classappend="${machine.type.name() == 'TYPE_A'} ? 'bg-primary' : 'bg-secondary'"
                                       th:text="${machine.type.name()}">
-                                    Type
                                 </span>
                             </td>
                             <td th:text="${machine.yearOfManufacturing}">2020</td>
                             <td th:text="${machine.manufacturingCompany}">Company</td>
                             <td>
-                                <span class="badge bg-success" th:text="${machine.lineName}">Line</span>
+                                <span th:text="${machine.lineName}">Line Name</span>
                             </td>
                             <td>
-                                <span class="badge bg-primary" th:text="${machine.floorName}">Floor</span>
+                                <span th:text="${machine.floorName}">Floor Name</span>
+                            </td>
+                            <td>
+                                <button th:if="${machine.hasImage()}" type="button" class="btn btn-sm btn-outline-secondary" onclick="showImageModal(this)" th:attr="data-image=${machine.imageBase64}">
+                                    <i class="bi bi-image"></i>
+                                </button>
                             </td>
                             <td sec:authorize="hasRole('ADMIN')">
                                 <div class="btn-group" role="group">
@@ -116,17 +129,12 @@
                                        title="Edit">
                                         <i class="bi bi-pencil"></i>
                                     </a>
-                                    <form th:action="@{/machines/delete/{serial}(serial=${machine.machineSerial})}" 
-                                          method="post" 
-                                          style="display: inline;"
-                                          onsubmit="return confirm('Are you sure you want to delete machine: ' + 
-                                                                    this.closest('tr').querySelector('code').textContent + '?');">
-                                        <button type="submit" 
-                                                class="btn btn-sm btn-outline-danger" 
-                                                title="Delete">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-danger" 
+                                            title="Delete" 
+                                            onclick="confirmDelete('/machines/delete/' + '${machine.machineSerial}')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
                                 </div>
                             </td>
                             <td sec:authorize="hasRole('OPERATOR')">
@@ -138,7 +146,7 @@
                                                  data-year=${machine.yearOfManufacturing},
                                                  data-company=${machine.manufacturingCompany},
                                                  data-line=${machine.lineName},
-                                                 data-floor=${machine.floorName}"
+                                                 data-floor=${machine.floorName}
                                         onclick="showMachineDetails(this)">
                                     <i class="bi bi-eye"></i> View
                                 </button>
@@ -174,6 +182,22 @@
             </nav>
         </div>
     </div>
+        <!-- Image Modal -->
+    <div class="modal fade" id="imageModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-image"></i> Machine Image
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="machineImage" src="" alt="Machine Img" class="img-fluid" style="max-height: 70vh;">
+                </div>
+            </div>
+        </div>
+    </div>
     
     <!-- Machine Details Modal (for Operators) -->
     <div class="modal fade" id="machineDetailsModal" tabindex="-1">
@@ -188,7 +212,7 @@
                 <div class="modal-body">
                     <table class="table table-bordered mb-0">
                         <tr>
-                            <th width="40%">Serial Number</th>
+                            <th width="40%">Machine Serial</th>
                             <td id="detail-serial">-</td>
                         </tr>
                         <tr>
@@ -233,8 +257,13 @@
             document.getElementById('detail-company').textContent = btn.dataset.company;
             document.getElementById('detail-line').textContent = btn.dataset.line;
             document.getElementById('detail-floor').textContent = btn.dataset.floor;
-            
             const modal = new bootstrap.Modal(document.getElementById('machineDetailsModal'));
+            modal.show();
+        }
+
+        function showImageModal(btn) {
+            document.getElementById('machineImage').src = 'data:image/jpeg;base64,' + btn.dataset.image;
+            const modal = new bootstrap.Modal(document.getElementById('imageModal'));
             modal.show();
         }
     </script>

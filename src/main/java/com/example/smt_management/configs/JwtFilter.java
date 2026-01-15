@@ -53,12 +53,12 @@ public class JwtFilter extends OncePerRequestFilter {
             UserDetails userDetails = userDetailsService.loadUserByUsername(username);
             
             if (jwtUtil.validateToken(token, userDetails)) {
-                // FIXED: Set userDetails as principal, not null
+                // Set userDetails as principal, not null
                 UsernamePasswordAuthenticationToken authToken = 
                     new UsernamePasswordAuthenticationToken(
-                        userDetails,  // Principal (was null before - THIS WAS THE BUG)
-                        null,         // Credentials (we don't need password here)
-                        userDetails.getAuthorities()  // Authorities
+                        userDetails,  
+                        null,         
+                        userDetails.getAuthorities() 
                     );
                 
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

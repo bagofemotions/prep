@@ -28,96 +28,34 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
+    private final ExternalApiAuthenticationProvider externalApiAuthenticationProvider;
 
     @Autowired
     public SecurityConfig(JwtFilter jwtFilter
-//           , ExternalApiAuthenticationProvider externalApiAuthenticationProvider) 
+           , ExternalApiAuthenticationProvider externalApiAuthenticationProvider 
     ) {
         this.jwtFilter = jwtFilter;
-
-//        this.externalApiAuthenticationProvider = externalApiAuthenticationProvider;
+        this.externalApiAuthenticationProvider = externalApiAuthenticationProvider;
     }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return http
-                .cors(Customizer.withDefaults())
-                .csrf(csrf -> csrf.disable())
-                .authorizeHttpRequests(auth -> auth
-                        // Public resources
-                        .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
-                        .requestMatchers("/login", "/logout", "/error").permitAll()
-                        
-                        // Dashboard - authenticated users
-                        .requestMatchers("/dashboard").authenticated()
-                        .requestMatchers("/dashboard-operator").hasRole("OPERATOR")
-                        .requestMatchers("/dashboard-admin").hasRole("ADMIN")
-                        
-                        // Floor management - Admin only for write operations
-                        .requestMatchers("/floors/create", "/floors/save", "/floors/edit/**", "/floors/delete/**", "/floors/cascade-delete/**", "/floors/check-delete/**").hasRole("ADMIN")
-                        .requestMatchers("/floors", "/floors/**").authenticated()
-                        
-                        // Line management - Admin only for write operations
-                        .requestMatchers("/lines/create", "/lines/save", "/lines/edit/**", "/lines/delete/**", "/lines/cascade-delete/**", "/lines/check-delete/**").hasRole("ADMIN")
-                        .requestMatchers("/lines", "/lines/**").authenticated()
-                        
-                        // Machine management - Admin only for write operations
-                        .requestMatchers("/machines/create", "/machines/save", "/machines/edit/**", "/machines/delete/**").hasRole("ADMIN")
-                        .requestMatchers("/machines", "/machines/**").authenticated()
-                        
-                        // All other requests require authentication
-                        .anyRequest().authenticated()
-                )
-                .formLogin(form -> form
-                        .loginPage("/login")
-                        .loginProcessingUrl("/perform_login") // ✅ Changed to avoid conflict
-                        .defaultSuccessUrl("/dashboard", true)
-                        .failureUrl("/login?error")
-                        .permitAll()
-                )
-                .logout(logout -> logout
-                        .logoutUrl("/logout")
-                        .logoutSuccessUrl("/login?logout")
-                        .deleteCookies("JWT", "JSESSIONID")
-                        .permitAll()
-                )
-                .sessionManagement(sess -> sess
-                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED) // ✅ Changed from STATELESS
-                )
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                .build();
-        
 //        return http
 //                .cors(Customizer.withDefaults())
 //                .csrf(csrf -> csrf.disable())
 //                .authorizeHttpRequests(auth -> auth
-//                        // Public resources
 //                        .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
-//                        .requestMatchers("/login", "/logout", "/error").permitAll()
-//                        
-//                        // Dashboard - authenticated users
+//                        .requestMatchers("/login", "/logout", "/error").permitAll()                        
 //                        .requestMatchers("/dashboard").authenticated()
 //                        .requestMatchers("/dashboard-operator").hasRole("OPERATOR")
-//                        .requestMatchers("/dashboard-admin").hasRole("ADMIN")
-//                        
-//                        // Floor management - Admin only for write operations
-//                        .requestMatchers("/floors/create", "/floors/save", "/floors/edit/**", 
-//                                       "/floors/delete/**", "/floors/cascade-delete/**", 
-//                                       "/floors/check-delete/**").hasRole("ADMIN")
-//                        .requestMatchers("/floors", "/floors/**").authenticated()
-//                        
-//                        // Line management - Admin only for write operations
-//                        .requestMatchers("/lines/create", "/lines/save", "/lines/edit/**", 
-//                                       "/lines/delete/**", "/lines/cascade-delete/**", 
-//                                       "/lines/check-delete/**").hasRole("ADMIN")
-//                        .requestMatchers("/lines", "/lines/**").authenticated()
-//                        
-//                        // Machine management - Admin only for write operations
-//                        .requestMatchers("/machines/create", "/machines/save", "/machines/edit/**", 
-//                                       "/machines/delete/**").hasRole("ADMIN")
+//                        .requestMatchers("/dashboard-admin").hasRole("ADMIN")                        
+//                        .requestMatchers("/floors/create", "/floors/save", "/floors/edit/**", "/floors/delete/**", "/floors/cascade-delete/**", "/floors/check-delete/**").hasRole("ADMIN")
+//                        .requestMatchers("/floors", "/floors/**").authenticated()                        
+//                        .requestMatchers("/lines/create", "/lines/save", "/lines/edit/**", "/lines/delete/**", "/lines/cascade-delete/**", "/lines/check-delete/**").hasRole("ADMIN")
+//                        .requestMatchers("/lines", "/lines/**").authenticated()                        
+//                        .requestMatchers("/machines/create", "/machines/save", "/machines/edit/**", "/machines/delete/**").hasRole("ADMIN")
 //                        .requestMatchers("/machines", "/machines/**").authenticated()
-//                        
-//                        // All other requests require authentication
+//                        // all other requests require authentication
 //                        .anyRequest().authenticated()
 //                )
 //                .formLogin(form -> form
@@ -138,22 +76,63 @@ public class SecurityConfig {
 //                )
 //                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
 //                .build();
+        
+        return http
+                .cors(Customizer.withDefaults())
+                .csrf(csrf -> csrf.disable())
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/css/**", "/js/**", "/images/**").permitAll()
+                        .requestMatchers("/login", "/logout", "/error").permitAll()
+                        .requestMatchers("/dashboard").authenticated()
+                        .requestMatchers("/dashboard-operator").hasRole("OPERATOR")
+                        .requestMatchers("/dashboard-admin").hasRole("ADMIN")                        
+                        .requestMatchers("/floors/create", "/floors/save", "/floors/edit/**", 
+                                       "/floors/delete/**", "/floors/cascade-delete/**", 
+                                       "/floors/check-delete/**").hasRole("ADMIN")
+                        .requestMatchers("/floors", "/floors/**").authenticated()
+                        .requestMatchers("/lines/create", "/lines/save", "/lines/edit/**", 
+                                       "/lines/delete/**", "/lines/cascade-delete/**", 
+                                       "/lines/check-delete/**").hasRole("ADMIN")
+                        .requestMatchers("/lines", "/lines/**").authenticated()
+                        .requestMatchers("/.well-known/appspecific/com.chrome.devtools.json").permitAll() 
+                        .requestMatchers("/machines/create", "/machines/save", "/machines/edit/**", 
+                                       "/machines/delete/**").hasRole("ADMIN")
+                        .requestMatchers("/machines", "/machines/**").authenticated()
+                        .anyRequest().authenticated()
+                )
+                .formLogin(form -> form
+                        .loginPage("/login")
+                        .loginProcessingUrl("/perform_login")
+                        .defaultSuccessUrl("/dashboard", true)
+                        .failureUrl("/login?error")
+                        .permitAll()
+                )
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/login?logout")
+                        .deleteCookies("JWT", "JSESSIONID")
+                        .permitAll()
+                )
+                .sessionManagement(sess -> sess
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                )
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
     }
 
-    @Bean
-    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService,
-                                                       PasswordEncoder passwordEncoder) {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(userDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder);
-        return new ProviderManager(authProvider);
-    }
-    
-//    public AuthenticationManager authenticationManager() {
-//
-//        return new ProviderManager(externalApiAuthenticationProvider);
-//
+//    @Bean
+//    public AuthenticationManager authenticationManager(UserDetailsService userDetailsService,
+//                                                       PasswordEncoder passwordEncoder) {
+//        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
+//        authProvider.setUserDetailsService(userDetailsService);
+//        authProvider.setPasswordEncoder(passwordEncoder);
+//        return new ProviderManager(authProvider);
 //    }
+    
+    @Bean
+    public AuthenticationManager authenticationManager() {
+        return new ProviderManager(externalApiAuthenticationProvider);
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -163,8 +142,8 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
-//        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:9090"));
+//        configuration.setAllowedOrigins(List.of("http://localhost:3000"));
+        configuration.setAllowedOrigins(List.of("http://localhost:3000", "http://localhost:8090"));
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("*"));
         configuration.setAllowCredentials(true);

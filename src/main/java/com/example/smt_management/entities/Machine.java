@@ -1,5 +1,10 @@
 package com.example.smt_management.entities;
 
+import java.sql.Types;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.Type;
+
 import com.example.smt_management.enums.MachineType;
 
 import jakarta.persistence.Column;
@@ -56,9 +61,11 @@ public class Machine {
     
     @Lob
     @Column(name = "image", columnDefinition = "bytea")
+//    @Type("org.hibernate.type.BinaryType")
+    @JdbcTypeCode(Types.BINARY)
     private byte[] image;
     
-    // FIXED: Proper @ManyToOne relationship with Line
+    // ManyToOne relationship with Line
     @ManyToOne
     @JoinColumn(name = "line_id", nullable = false)
     @NotNull(message = "Line mapping is required")
@@ -105,4 +112,13 @@ public class Machine {
     public boolean hasImage() {
         return image != null && image.length > 0;
     }
+
+    public String getImageBase64() {
+        if (hasImage()) {
+            return java.util.Base64.getEncoder().encodeToString(image);
+        }
+        return null;
+    }
+    
+    
 }

@@ -3,9 +3,9 @@
       th:replace="~{layout/base :: layout(~{::title}, ~{::content})}">
 <head>
     <title th:text="${machine.machineSerial != null ? 'Edit Machine' : 'Create Machine'}">Machine Form</title>
-	<link rel="stylesheet" th:href="@{/css/global.css}">
+    <link rel="stylesheet" th:href="@{/css/global.css}">
 
-	</head>
+    </head>
 <body>
 <div th:fragment="content">
     
@@ -30,7 +30,8 @@
                     </h5>
                 </div>
                 <div class="card-body">
-                    <form th:action="@{/machines/save}" th:object="${machine}" method="post">
+                    <!-- Added enctype for file upload -->
+                    <form th:action="@{/machines/save}" th:object="${machine}" method="post" enctype="multipart/form-data">
                         
                         <div class="row">
                             <!-- Left Column -->
@@ -38,7 +39,7 @@
                                 <!-- Machine Serial -->
                                 <div class="mb-3">
                                     <label for="machineSerial" class="form-label">
-                                        Machine Serial Number <span class="text-danger">*</span>
+                                        Machine Serial <span class="text-danger">*</span>
                                     </label>
                                     <input type="text" 
                                            class="form-control" 
@@ -164,6 +165,19 @@
                             </div>
                         </div>
                         
+                        <!-- Added: Image Upload Section -->
+                        <div class="mb-3">
+                            <label for="imageFile" class="form-label">Machine Image</label>
+                            <input type="file" class="form-control" id="imageFile" name="imageFile" accept="image/*">
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i> Upload an image of the machine (optional, max 5MB)
+                            </div>
+                            <div th:if="${machine.hasImage()}" class="mt-2">
+                                <img th:src="'data:image/jpeg;base64,' + ${machine.imageBase64}" alt="Current" style="max-width: 200px; max-height: 200px;">
+                                <p class="text-muted small">Current image. Upload a new one to replace it.</p>
+                            </div>
+                        </div>
+                        
                         <!-- Info Box -->
                         <div class="alert alert-warning mt-3">
                             <h6 class="alert-heading">
@@ -171,8 +185,8 @@
                             </h6>
                             <ul class="mb-0">
                                 <li>Each line can have a maximum of <strong>10 machines</strong></li>
-                                <li>Machine serial numbers must be unique across the system</li>
-                                <li>Serial numbers cannot be changed after creation</li>
+                                <li>Machine serials must be unique across the system</li>
+                                <li>Serials cannot be changed after creation</li>
                                 <li>All fields marked with <span class="text-danger">*</span> are required</li>
                             </ul>
                         </div>

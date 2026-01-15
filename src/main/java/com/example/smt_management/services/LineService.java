@@ -161,7 +161,7 @@ public class LineService {
      * @throws RuntimeException if name already exists
      */
     private void validateLineNameUnique(String lineName) {
-        if (existsByLineName(lineName)) {
+        if (existsByLineName(lineName) ) {
             throw new RuntimeException("Line name '" + lineName + "' already exists");
         }
     }

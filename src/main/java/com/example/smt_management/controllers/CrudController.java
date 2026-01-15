@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.smt_management.entities.Floor;
@@ -412,7 +413,7 @@ public class CrudController {
         return "machines/form";
     }
     
-    /**
+     /**
      * Save machine (create or update)
      */
     @PostMapping("/machines/save")
@@ -420,6 +421,7 @@ public class CrudController {
     public String saveMachine(
             @Valid @ModelAttribute Machine machine,
             BindingResult result,
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile,
             RedirectAttributes redirectAttributes) {
         
         if (result.hasErrors()) {
@@ -428,6 +430,9 @@ public class CrudController {
         }
         
         try {
+            if (imageFile != null && !imageFile.isEmpty()) {
+                machine.setImage(imageFile.getBytes());
+            }
             machineService.saveMachine(machine);
             redirectAttributes.addFlashAttribute("success", "Machine saved successfully!");
         } catch (Exception e) {
@@ -451,4 +456,13 @@ public class CrudController {
         }
         return "redirect:/machines";
     }
+    
+//    @GetMapping("/view/{name}")
+//    public ResponseEntity<byte[]> viewImage(@PathVariable String name) {
+//        return imageService.getImage(name)
+//            .map(img -> ResponseEntity.ok()
+//                .contentType(MediaType.valueOf(img.getType()))
+//                .body(img.getData()))
+//            .orElse(ResponseEntity.notFound().build());
+//    }
 }
